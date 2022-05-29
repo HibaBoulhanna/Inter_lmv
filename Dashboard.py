@@ -70,8 +70,7 @@ if indicateur == 'MACD':
     para2 = st.text_input("Parametre MACD 2")
     para3 = st.text_input("Parametre MACD 3")
     para4 = st.text_input("Parametre MACD 4")
-else if indicateur == 'RSI':
-    pass
+
 
 
 st.markdown('__________________________________________________________')
