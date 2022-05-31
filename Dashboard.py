@@ -32,7 +32,7 @@ st.title('Interface de visualisation')
 
 st.sidebar.markdown('<center><img src="http://www.ansamble-maroc.com/wp-content/uploads/2016/08/LMV-LOGO-Copie.jpg" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
 
-st.sidebar.markdown("## Selectioner le titre et la periode ")
+st.sidebar.markdown("## Selectioner le titre et l'indicateurs technique ainsi que une valeur pour les parmètres adéquats")
 st.markdown('### Réalisé par : BOULHANNA Hiba')
 st.markdown("### Sous la direction de : Mr. HOUMMANI Ayoub")
 st.markdown('##')
