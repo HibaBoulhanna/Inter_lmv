@@ -40,7 +40,7 @@ st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", py.get_stocks(country='morocco').name)
-indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI'])
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI','Bolinguer','cho','Mom','NVI','PVI','NVI','OBV','MM2','MM3','William','Stochastique'])
 
 ma = st.sidebar.selectbox("Periode de calcule de la moyenne mobile (en jours)", [15,30,45,60])
 
