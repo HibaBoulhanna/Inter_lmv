@@ -65,10 +65,9 @@ url = str(url)
 st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True) # logo de l'action
 
 if indicateur == 'MACD':
-    para1 = st.text_input("Parametre MACD 1")
-    para2 = st.text_input("Parametre MACD 2")
-    para3 = st.text_input("Parametre MACD 3")
-    para4 = st.text_input("Parametre MACD 4")
+    para1 = st.text_input("Période Minimale")
+    para2 = st.text_input("Période Maximale")
+    
 
 
 
