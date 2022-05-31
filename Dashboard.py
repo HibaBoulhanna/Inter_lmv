@@ -33,16 +33,16 @@ st.title('Titre')
 st.sidebar.markdown('<center><img src="http://www.ansamble-maroc.com/wp-content/uploads/2016/08/LMV-LOGO-Copie.jpg" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
 
 st.sidebar.markdown("## Selectioner le titre et la periode ")
-st.markdown('### Réalisé par BOULHANNA Hiba')
-st.markdown("### Sous l'encadrement de Mr HOUMMANI Ayoub")
+st.markdown('### Réalisé par : BOULHANNA Hiba')
+st.markdown("### Sous la direction de : Mr. HOUMMANI Ayoub")
 st.markdown('##')
 st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", py.get_stocks(country='morocco').name)
-indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI','Bolinguer','cho','Mom','NVI','PVI','NVI','OBV','MM2','MM3','William','Stochastique'])
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI','Bolinguer','cho','Mom','NVI','PVI','NVI','OBV','MM2','MM3','William','Stochastique','Indicateur synthétique'])
 
-ma = st.sidebar.selectbox("Periode de calcule de la moyenne mobile (en jours)", [15,30,45,60])
+ma = st.sidebar.selectbox("Période de calcul de la moyenne mobile (en jours)", [15,30,45,60])
 
 
 
