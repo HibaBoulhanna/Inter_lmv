@@ -33,8 +33,8 @@ st.title('Titre')
 st.sidebar.markdown('<center><img src="http://www.ansamble-maroc.com/wp-content/uploads/2016/08/LMV-LOGO-Copie.jpg" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
 
 st.sidebar.markdown("## Selectioner le titre et la periode ")
-st.markdown('### Travail realisé par: ....')
-st.markdown("### Sous l'encadrement de Pr...")
+st.markdown('### Réalisé par BOULHANNA Hiba')
+st.markdown("### Sous l'encadrement de Mr HOUMMANI Ayoub")
 st.markdown('##')
 st.markdown('__________________________________________________________')
 
