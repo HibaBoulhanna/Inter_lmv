@@ -38,16 +38,16 @@ st.title('Titre')
 
 st.sidebar.markdown('<center><img src="http://www.ansamble-maroc.com/wp-content/uploads/2016/08/LMV-LOGO-Copie.jpg" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
 
-st.sidebar.markdown("## Sélectionner un indicateurs et préciser une valeurs pour ses paramètres  ")
+st.sidebar.markdown("## Sélectionner un indicateur et préciser une valeurs pour ses paramètres  ")
 st.markdown('Travail realisé par: Boulhanna Hiba ')
-st.markdown("Sous la direction de Mr.HOUMMANI Ayoub & Mr.BENABADJI Oualid  ")
+st.markdown("Sous la direction de Mr.HOUMMANI Ayoub & Mr.BENABADJI Oualid")
 st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", py.get_stocks(country='morocco').name)
 indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI'])
 
-ma = st.sidebar.selectbox("Periode de calcule de la moyenne mobile (en jours)", [15,30,45,60])
+ma = st.sidebar.selectbox("Période de calcul de la moyenne mobile (en jours)", [15,30,45,60])
 
 
 
