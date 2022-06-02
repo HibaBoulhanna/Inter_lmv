@@ -4,3 +4,5 @@ requests
 streamlit
 bs4
 plotly
+matplotlib
+numpy
