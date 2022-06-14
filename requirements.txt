@@ -6,4 +6,5 @@ bs4
 plotly
 matplotlib
 numpy
-pandas_ta 
+pandas_ta
+sklearn
