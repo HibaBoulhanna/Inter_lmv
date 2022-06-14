@@ -38,14 +38,22 @@ st.title('Titre')
 
 st.sidebar.markdown('<center><img src="https://www.lamarocainevie.com/bo/sites/default/files/2019-02/logo.png" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
 
-st.sidebar.markdown("## Selectioner le titre et la periode ")
-st.markdown('Travail realisé par: ....')
-st.markdown("Sous l'encadrement de Pr...")
+st.sidebar.markdown("## Sélectionner un indicateur et préciser une valeurs pour ses paramètres  ")
+st.markdown('Travail realisé par: Boulhanna Hiba ')
+st.markdown("Sous la direction de Mr.HOUMMANI Ayoub & Mr.BENABADJI Oualid")
 st.markdown('__________________________________________________________')
 
 
+<<<<<<< HEAD
 dropdown = st.sidebar.selectbox("Choisir une action", pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]))
 indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI', 'BB'])
+=======
+dropdown = st.sidebar.selectbox("Choisir une action", py.get_stocks(country='morocco').name)
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI'])
+
+ma = st.sidebar.selectbox("Période de calcul de la moyenne mobile (en jours)", [15,30,45,60])
+
+>>>>>>> 2664a1ebed214a99a0cc24ea8e3051467eeae1aa
 
 
 start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020'))
