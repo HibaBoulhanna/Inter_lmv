@@ -29,7 +29,7 @@ apptitle = 'Projet hiba'
 st.set_page_config(page_title=apptitle, page_icon=":chart_with_upwards_trend:")
 
 # Title the app
-st.title('Titre')
+st.title('Interface Stage PFE ')
 
 # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
 
