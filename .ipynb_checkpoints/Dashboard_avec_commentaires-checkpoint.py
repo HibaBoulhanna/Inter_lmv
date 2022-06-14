@@ -5,10 +5,10 @@ import requests
 import investpy as py
 from bs4 import BeautifulSoup
 import plotly.express as px
-from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
 from _relative_strength_index import RelativeStrengthIndex
 from _bollinger_bands import BollingerBands
+
 
 
 def ticker_2_CodeValeur(ticker):
@@ -45,46 +45,62 @@ st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]))
-indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI', 'BB'])
+
+# pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]) -> Hadi une liste fiha le MASI + ga3 les cotations li kaynin f la bourse 
+# py.get_stocks(country='morocco').name  -> hadi fct kayna f Investpy kat returner liste dyal ga3 les cotations (Sous forme Pandas Series) mais mafihach l MASI 
+# c prq drt concat bach zedt le MASI 
 
 
-start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020'))
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI', 'BB']) # choix d'indicateur 3adi 
+
+
+start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020')) 
 end = st.sidebar.date_input('Fin', value = pd.to_datetime('today'))
 
-start = start.strftime('%d/%m/%Y')
-end = end.strftime('%d/%m/%Y')
+start = start.strftime('%d/%m/%Y') # hna ghir kantransformer la forme dyal la date l la forme li kayfhemha Investpy 
+end = end.strftime('%d/%m/%Y') # meme chose ici 
 
-stocks = py.get_stocks(country='morocco')
+stocks = py.get_stocks(country='morocco') # hadi fct kayna f Investpy kat returner une liste dyal ga3 les cotations 
 stocks.set_index("name", inplace = True)
 
 
-if dropdown != "MASI":
-  ticker =  stocks.loc[dropdown,'symbol']
-  df=py.get_stock_historical_data(stock=ticker, country='morocco', from_date=start, to_date=end)
-  url = get_image(ticker)
+if dropdown != "MASI": # hna traitement lighadi ndiro pour le MASI machi le meme li khassna ndiro l les cotations 
+  ticker =  stocks.loc[dropdown,'symbol'] # kanakhdo smiya li khtarha l'utilisateur w kanjbdo Ticker dyalha (Exemple : Promotion Addoha => ADH)
+  df=py.get_stock_historical_data(stock=ticker, country='morocco', from_date=start, to_date=end) # hna 3adi kanjibo les cours historiques 
+  url = get_image(ticker) # hadi dik la fct li katjbed les logo, kankhdmo biha ghir pour les cotations, pour le masi khdit wa7d la photo direct mn google 
   url = str(url)
 else :
-  df=py.get_index_historical_data(index='Moroccan All Shares', country='morocco', from_date=start, to_date=end)
-  df.Volume = df.Close*10000 
-  url = "https://static.lematin.ma/cdn/images/icobourse/indices/masi.png"
+  df=py.get_index_historical_data(index='Moroccan All Shares', country='morocco', from_date=start, to_date=end) # hadi 3adi kanjibo biha les cours dyal MASI 
+  df.Volume = df.Close*10000  # khdit volume howa cours * 10000 bach mat3iye9ch hhhh feel free to change it 
+  url = "https://static.lematin.ma/cdn/images/icobourse/indices/masi.png" # hadi ghir logo dyal MASI khdito mn google 
+
+
+
+
 
 
 st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True) # logo de l'action
 st.markdown('__________________________________________________________')
+
+
 if indicateur == 'MACD':
-  c1, c2 = st.columns(2)
-  with c1:
+  c1, c2 = st.columns(2) # hadi ghir 9ssemt biha l'interface l 2 columns bach matl3ch input te7t lokhra, itel3o bjoj f la meme ligne 
+  with c1: # column lowla 7tit fiha input dyal variable ws 
       ws = st.number_input('Ws', 9)
-  with c2:
+  with c2: # column 2 pour variable wl 
       wl = st.number_input('Wl', 26)
 
   macd = MovingAverageConvergenceDivergence(df)
   calcul_macd = macd._calculateTi(wl=wl,ws=ws)
+  # had les 4 lignes je pense 3adi ghir preparit data pour plotly 
   df['macd'] = calcul_macd.macd
   df['signal line'] = calcul_macd.signal_line
   data = [df['close'], df['macd'], df['signal line']]
   headers = ["close", "macd", 'signal line']
   
+
+# Ce qui suit je pense 3adi ghatfhmih 
+
 elif indicateur == 'RSI':
     rsi=RelativeStrengthIndex(df)
     period = st.number_input('Period', 9)
@@ -108,12 +124,9 @@ elif indicateur == 'BB':
     headers = ["close", "middle_band", "upper_band", "lower_band"]
 
 
+
 st.markdown('__________________________________________________________')
 df3 = pd.concat(data, axis=1, keys=headers)
-fig = px.line(df3, width=1200, height=700 )
-st.plotly_chart(fig, use_container_width=False, sharing="streamlit")
+fig = px.line(df3)
+st.plotly_chart(fig, use_container_width=False, sharing="streamlit") # hadi l'affichage dyal plotly 
 
-dt = get_acp(df)
-st.markdown('ACP :')
-st.dataframe(dt)
-st.markdown('__________________________________________________________')
