@@ -17,11 +17,7 @@ def ticker_2_CodeValeur(ticker):
 
 
 def get_image(ticker):                                                           
-  url = "https://www.casablanca-bourse.com/bourseweb/Societe-Cote.aspx?codeValeur="+str(ticker_2_CodeValeur(ticker))+"&cat=7"
-  req = requests.get(url)
-  soup = BeautifulSoup(req.text, "html.parser")
-  logo_path = soup.find("input", {"id": "SocieteCotee1_imgLogo"})['src']
-  logo_url = 'https://www.casablanca-bourse.com/bourseweb/' + logo_path
+   url = f"https://www.casablanca-bourse.com/bourseweb/img/societes_cote/{ticker}.gif"
   return logo_url
 
 apptitle = 'Projet hiba'
