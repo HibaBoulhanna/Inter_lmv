@@ -18,7 +18,7 @@ def ticker_2_CodeValeur(ticker):
 
 def get_image(ticker):                                                           
   url = f"https://www.casablanca-bourse.com/bourseweb/img/societes_cote/{ticker}.gif"
-  return logo_url
+  return url
 
 apptitle = 'Projet hiba'
 
