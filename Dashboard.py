@@ -9,6 +9,8 @@ from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
 from _relative_strength_index import RelativeStrengthIndex
 from _bollinger_bands import BollingerBands
+from smm_stoch_roc_mom import smm, stochastic, rate_of_change, momentum
+
 
 
 def ticker_2_CodeValeur(ticker):
@@ -42,13 +44,7 @@ st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]))
-indicateur = st.sidebar.selectbox("Choisir un indicateur", ['MACD','RSI', 'BB'])
-
-
-
-
-
-
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['BB','MACD','MOM','RSI','ROC','SMA','STOCHA'])
 
 start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020'))
 end = st.sidebar.date_input('Fin', value = pd.to_datetime('today'))
@@ -71,7 +67,10 @@ else :
   url = "https://static.lematin.ma/cdn/images/icobourse/indices/masi.png"
 
 
-st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True) # logo de l'action
+# st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True) # logo de l'action
+st.markdown('![Alt Text]('+url+')') # logo de l'action
+
+print(url)
 st.markdown('__________________________________________________________')
 if indicateur == 'MACD':
   c1, c2 = st.columns(2)
@@ -108,6 +107,39 @@ elif indicateur == 'BB':
     df['lower_band'] = calcul_bb.lower_band
     data = [df['middle_band'], df['upper_band'], df['lower_band']]
     headers = ["close", "middle_band", "upper_band", "lower_band"]
+
+elif indicateur == 'ROC':
+    w = st.number_input('W', 9)
+    roc = rate_of_change(df.Close, w)
+    data = [roc['Close'], roc['ROC']]
+    headers = ['Close', 'ROC']
+    
+  
+elif indicateur == 'SMA':
+    period = st.number_input('n', 9)
+    sma = smm(df.Close,period)
+    data = [sma['Close'], sma['SMM']]
+    headers = ['Close', 'SMA']
+
+elif indicateur == 'MOM':
+    c1, c2 = st.columns(2)
+    with c1:
+        w = st.number_input('W', 12)
+    with c2:
+        wsig = st.number_input('Wsig', 9)
+    mom = momentum(df.Close,w, wsig)
+    data = [mom['Close'], mom['MOM'], mom['MOMsignal']]
+    headers = ["close", 'MOM','MOMsignal']
+
+elif indicateur == 'STOCHA':
+    c1, c2 = st.columns(2)
+    with c1:
+        period = st.number_input('Period', 12)
+    with c2:
+        w = st.number_input('W', 4)
+    stoch = stochastic(df.Close, df.High, df.Low,period, w)
+    data = [stoch['Close'],stoch['%K'], stoch['%D']]
+    headers = ["close", "K", 'D']
 
 
 st.markdown('__________________________________________________________')
