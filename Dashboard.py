@@ -9,8 +9,7 @@ from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
 from _relative_strength_index import RelativeStrengthIndex
 from _bollinger_bands import BollingerBands
-from smm_stoch_roc_mom import smm, stochastic, rate_of_change, momentum
-
+from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi 
 
 
 def ticker_2_CodeValeur(ticker):
@@ -44,7 +43,7 @@ st.markdown('__________________________________________________________')
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]))
-indicateur = st.sidebar.selectbox("Choisir un indicateur", ['BB','MACD','MOM','RSI','ROC','SMA','STOCHA'])
+indicateur = st.sidebar.selectbox("Choisir un indicateur", ['BB','MACD','MOM','RSI','ROC','SMA','STOCHA','OBV', 'williams', 'EMM', 'MFI', 'CHO', 'NVI', 'PVI'])
 
 start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020'))
 end = st.sidebar.date_input('Fin', value = pd.to_datetime('today'))
@@ -72,6 +71,7 @@ st.markdown('![Alt Text]('+url+')') # logo de l'action
 
 print(url)
 st.markdown('__________________________________________________________')
+
 if indicateur == 'MACD':
   c1, c2 = st.columns(2)
   with c1:
@@ -113,13 +113,59 @@ elif indicateur == 'ROC':
     roc = rate_of_change(df.Close, w)
     data = [roc['Close'], roc['ROC']]
     headers = ['Close', 'ROC']
-    
+
+elif indicateur == 'OBV':
+    obv = obv(df.Close, df.Volume)
+    data = [obv['Close'], obv['OBV']]
+    headers = ['Close', 'OBV'] 
+
+elif indicateur == 'NVI':
+    nvi = pd.DataFrame(nvi(df.Close, df.Volume), columns = ['NVI'])
+    nvi.index = df.index
+    data = [df['Close'], nvi['NVI']]
+    headers = ['Close', 'NVI'] 
+
+elif indicateur == 'PVI':
+    pvi = pd.DataFrame(pvi(df.Close, df.Volume), columns = ['PVI'])
+    pvi.index = df.index
+    data = [df['Close'], pvi['PVI']]
+    headers = ['Close', 'PVI'] 
   
 elif indicateur == 'SMA':
     period = st.number_input('n', 9)
     sma = smm(df.Close,period)
     data = [sma['Close'], sma['SMM']]
     headers = ['Close', 'SMA']
+
+elif indicateur == 'williams':
+    period = st.number_input('n', 9)
+    williams = williams(df.Close,period)
+    data = [williams['Close'], williams['%R']]
+    headers = ['Close', '%R']
+
+elif indicateur == 'EMM':
+    period = st.number_input('n', 9)
+    emm = emm(df.Close,period)
+    data = [df.Close, emm]
+    headers = ['Close', 'EMM']
+
+elif indicateur == 'MFI':
+    period = st.number_input('n', 9)
+    mfi = MFI(df.Close, df.Volume, df.High, df.Low, period)
+    data = [mfi.Close, mfi.MFI]
+    headers = ['Close', 'MFI']
+
+elif indicateur == 'CHO':
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        period = st.number_input('period', 1)
+    with c2:
+        ws = st.number_input('Ws', 1)
+    with c3 :
+        wl = st.number_input('Wl', 1)
+    cho = cho(df.Close, df.Volume, df.High, df.Low, period, ws,wl)
+    data = [cho['Close'], cho['CHO']]
+    headers = ["close", 'CHO']
 
 elif indicateur == 'MOM':
     c1, c2 = st.columns(2)
@@ -140,7 +186,6 @@ elif indicateur == 'STOCHA':
     stoch = stochastic(df.Close, df.High, df.Low,period, w)
     data = [stoch['Close'],stoch['%K'], stoch['%D']]
     headers = ["close", "K", 'D']
-
 
 st.markdown('__________________________________________________________')
 df3 = pd.concat(data, axis=1, keys=headers)
