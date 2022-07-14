@@ -1,7 +1,48 @@
 import pandas as pd
 import numpy as np 
+import matplotlib.pyplot as plt
 
+def pmv(close,signal):
+	"""
+		La Plus-ou-moins-value
+	"""
+	close=np.array(close)
+	signal=np.array(signal.fillna(0))
+	qt=signal.cumsum()
+	achat= np.where(signal>=1,1,0)
+	PDR=[]
+	for t in range(len(close)):
+		p=(close[:t+1]*achat[:t+1]).sum()
+		if achat[:t+1].sum()==0 :
+			val=0
+		else :
+			p=p/(achat[:t+1].sum())
+			val=qt[t]*p 
+		PDR.append(val)
+	PMV_lat=close*qt-PDR
+	PMV_re=[0]
+	for i in range(1,len(close)):
+		vl=PDR[i]-PDR[i-1]+PMV_re[i-1]-close[i]*signal[i]
+		PMV_re.append(vl)
+	PMV=PMV_lat+PMV_re
+	return PMV
 
+def adjustsignal(signal):
+	sig=[]
+	qtite=0
+	for i in signal:
+		if i > 0 :
+			sig.append(i)
+			qtite+=1
+		elif i < 0:
+			if qtite >= abs(i) :
+				sig.append(i)
+				qtite+=-i
+			else:
+				sig.append(0)
+		else:
+			sig.append(0)
+	return 
 
 def smm(df,n):
 	"""
@@ -71,7 +112,6 @@ def rate_of_change(df,w):
 	df=df.join(ROC)
 	return df
 
-
 def momentum(df,w,wsig=9):
 	"""
 	Momentum
@@ -95,8 +135,6 @@ def momentum(df,w,wsig=9):
 	df=df.join(MOM)
 	df=df.join(MOMsignal)
 	return df
-
-
 
 def emm(df,n):
 	"""
@@ -123,8 +161,7 @@ def emm(df,n):
 	MME.name="EMM"
 	return MME
 
-
-def  obv(df,vol):
+def obv(df,vol):
 	"""
 	On Balance Volume (OBV)
 	Inputs: 
@@ -147,7 +184,6 @@ def  obv(df,vol):
 	df=df.join(OBV)
 	return df
 
-
 def williams(df,n):
 	"""
 	Williams %R
@@ -169,7 +205,6 @@ def williams(df,n):
 	df=pd.DataFrame(df)
 	df=df.join(R)
 	return df
-
 
 def MFI(close,volume,high,low,n):
 	"""
@@ -202,7 +237,6 @@ def MFI(close,volume,high,low,n):
 	df=pd.DataFrame(close)
 	df=df.join(MFI)
 	return df
-
 
 def cho(close,volume,high,low,n,ws,wl):
 	"""
@@ -278,3 +312,28 @@ def pvi(close,volume):
 			pv.append(pv[i-1])
 	PVI=pd.Series(pv,name='PVI')
 	return PVI
+
+def sign_momentum(df,w,wsig=9):
+	MOM=momentum(df,w,wsig=9)[["MOM","MOMsignal"]]
+	signal=pd.DataFrame(index=df.index)
+	signal["compa"]=np.nan
+	signal["compa"][w:]=np.where(MOM["MOM"][w:] > MOM["MOMsignal"][w:],1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(df,signal["signal"])
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2=fig.add_subplot(312, ylabel='MOM')
+	MOM.plot(ax=ax2, legend=True, grid=True)
+	plt.title("MOM Strategy")
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	plt.show()
+	# plt.savefig('books_read.png')
+	# return fig

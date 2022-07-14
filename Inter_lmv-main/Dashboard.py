@@ -9,7 +9,7 @@ from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
 from _relative_strength_index import RelativeStrengthIndex
 from _bollinger_bands import BollingerBands
-from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi 
+from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, sign_momentum
 
 
 def ticker_2_CodeValeur(ticker):
@@ -174,6 +174,8 @@ elif indicateur == 'MOM':
     with c2:
         wsig = st.number_input('Wsig', 9)
     mom = momentum(df.Close,w, wsig)
+    sign_fig = sign_momentum(df.Close,w, wsig)
+
     data = [mom['Close'], mom['MOM'], mom['MOMsignal']]
     headers = ["close", 'MOM','MOMsignal']
 
@@ -191,6 +193,7 @@ st.markdown('__________________________________________________________')
 df3 = pd.concat(data, axis=1, keys=headers)
 fig = px.line(df3, width=1200, height=700 )
 st.plotly_chart(fig, use_container_width=False, sharing="streamlit")
+st.pyplot(sign_fig)
 
 dt = get_acp(df)
 st.markdown('ACP :')
