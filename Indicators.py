@@ -42,7 +42,7 @@ def adjustsignal(signal):
 				sig.append(0)
 		else:
 			sig.append(0)
-	return 
+	return sig
 
 def smm(df,n):
 	"""
@@ -313,6 +313,55 @@ def pvi(close,volume):
 	PVI=pd.Series(pv,name='PVI')
 	return PVI
 
+def bollinger(df,w,k):
+ 	"""
+ 	Bandes de Bollinger
+ 	 Paramètre: df: pandas.DataFrame ou pandas.Series: vecteur des prix
+ 	            w : ordre de la moyenne mobile 
+ 	            k : 
+ 	 Retour:  BBDOWN: bande inférieure
+ 	          BBUP  : bande supérieure
+ 	          BBMID : bande au milieu
+ 	"""
+ 	BBMID=df.rolling(w, min_periods=w).mean()
+ 	sigma=df.rolling(w, min_periods=w).std()
+ 	BBUP=BBMID + k*sigma
+ 	BBDOWN=BBMID - k*sigma
+ 	BBDOWN=pd.Series(BBDOWN,name='BBDOWN')
+ 	BBMID=pd.Series(BBMID,name='BBMID')
+ 	BBUP=pd.Series(BBUP,name='BBUP')
+ 	df=pd.DataFrame(df)
+ 	df=df.join(BBDOWN)
+ 	df=df.join(BBMID)
+ 	df=df.join(BBUP)
+ 	df.columns=['COURS_CLOTURE',"BBDOWN","BBMID","BBUP"]
+ 	return df
+
+
+def rsi(df,n):
+ 	"""
+ 	 Relative Strength index
+ 	  :Paramètre:
+ 	   df: pandas.DataFrame
+ 	   n : ordre
+ 	  :return:
+ 	   pandas.DataFrame
+ 	"""
+ 	diff=df.diff(1)
+ 	t=[]
+ 	for i in diff.values :
+ 		if i > 0:
+ 			t.append(i)
+ 		else :
+ 			t.append(0)
+ 	pos=pd.DataFrame(t,index=df.index)
+ 	diff=np.abs(pd.DataFrame(diff))
+ 	RSI=pos.rolling(n,min_periods=n).sum()/np.array((diff.rolling(n,min_periods=n).sum()))
+ 	df=pd.DataFrame(df)
+ 	df=df.join(RSI)
+ 	df.columns=["COURS_CLOTURE","RSI"] 
+ 	return df
+
 def sign_momentum(df,w,wsig=9):
 	MOM=momentum(df,w,wsig=9)[["MOM","MOMsignal"]]
 	signal=pd.DataFrame(index=df.index)
@@ -334,6 +383,221 @@ def sign_momentum(df,w,wsig=9):
 	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
 	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
 	plt.legend(["Plus_value","Moins_value"])
-	plt.show()
-	# plt.savefig('books_read.png')
-	# return fig
+	return fig
+
+def sign_pvi(close,volume,n):
+	"""
+	"""
+	signal=pd.DataFrame(index=close.index)
+	signal["compa"]=np.nan 
+	pv=pvi(close,volume)
+	pvis=pd.Series(pv.rolling(n).mean(), name="PVIsignal")
+	signal["compa"][n:]=np.where(pv[n:] > pvis[n:] ,1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(close,signal["signal"])
+	pmval=pd.Series(pmval,index=close.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	close.plot(ax=ax1, color='g', lw=.5,figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","MMS","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='Negative Volume Index')
+	pv.plot(ax=ax2,lw=2., legend=True, grid=True)
+	pvis.plot(ax=ax2,lw=2., legend=True, grid=True)
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(close.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(close.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def  sign_rsi(df,n):
+	"""
+	"""
+	signal=pd.DataFrame(index=df.index)
+	rs=rsi(df,n)["RSI"]
+	signal["compa_achat"]=np.nan
+	signal["compa_vente"]=np.nan
+	signal["compa_achat"][n:]=np.where(rs[n:] > 0.3,1,0)
+	signal["signal_achat"]=signal["compa_achat"].diff()
+	signal["compa_vente"][n:]=np.where(rs[n:] < 0.7,4,2)
+	signal["signal_vente"]=signal["compa_vente"].diff()
+	sig=np.where(signal["signal_achat"]==1,1,0)+np.where(signal["signal_vente"]==2,-1,0)
+	sig=adjustsignal(sig)
+	sig=pd.Series(sig, index=df.index)
+	signal["signal"]=sig
+	pmval=pmv(df,sig)
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal ==-1], 'v', markersize=7, color='r')
+	plt.title("RSI Strategy")
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='RSI')
+	rs.plot(ax=ax2, lw=2., legend=True,grid=True)
+	plt.axhline(0.7,color="green")
+	plt.axhline(0.3,color="red")
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig
+
+def sign_bollinger(df,w,k):
+	"""
+	"""
+	signal=pd.DataFrame(index=df.index)
+	signal["compa"]=np.nan
+	signal["compa2"]=np.nan
+	bb=bollinger(df,w,k)[["BBDOWN","BBUP"]]
+	signal["compa"][w:] = np.where( (df[w:] > bb["BBUP"][w:] ) ,1,0)
+	signal["compa2"][w:] = np.where( (df[w:] < bb["BBDOWN"][w:] ) ,4,2)
+	signal["signal"]=signal["compa"].diff()
+	signal["signal2"]=signal["compa2"].diff()
+	sig=np.where(signal["signal"]==1,-1,0)+np.where(signal["signal2"]==2,1,0)
+	sig=adjustsignal(sig)
+	sig=pd.Series(sig, index=df.index)
+	signal["sig"]=sig
+	pmval=pmv(df,sig)
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(211, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.fill_between(df.index,bb["BBUP"],bb["BBDOWN"],facecolor='red', alpha=0.2)
+	bb.plot(ax=ax1, lw=.5)
+	ax1.plot(signal.loc[signal.sig==1].index ,df[signal.sig==1],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.sig==-1].index ,df[signal.sig==-1],'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","BBDOWN","BBUP","Achat",  "Vente"])
+	plt.title("Bondes de Bollinger Trading Strategy")
+	ax2=fig.add_subplot(212, ylabel='PMV')
+	ax2.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax2.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def sign_stochastique1(df,high,low ,n , w):
+	"""
+	"""
+	signal=pd.DataFrame(index=df.index)
+	k=stochastic(df ,high,low, n , w)["%K"]
+	signal["compa_achat"]=np.nan
+	signal["compa_vente"]=np.nan
+	signal["compa_achat"][n:]=np.where(k[n:] > 20,1,0)
+	signal["signal_achat"]=signal["compa_achat"].diff()
+	signal["compa_vente"][n:]=np.where(k[n:] < 80,4,2)
+	signal["signal_vente"]=signal["compa_vente"].diff()
+	sig=np.where(signal["signal_achat"]==1,1,0)+np.where(signal["signal_vente"]==2,-1,0)
+	sig=adjustsignal(sig)
+	sig=pd.Series(sig, index=df.index)
+	signal["signal"]=sig
+	pmval=pmv(df,sig)
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal == -1], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='Stochastique')
+	k.plot(ax=ax2, lw=2., legend=True,grid=True)
+	plt.axhline(80,color="green")
+	plt.axhline(20,color="red")
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig
+
+def sign_roc(df,w):
+	"""
+	"""
+	signal=pd.DataFrame(index=df.index)
+	roc=rate_of_change(df,w)["ROC"]
+	signal["compa"]=np.nan
+	signal["compa"][w:]=np.where( roc[w:]> 0,1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(df,signal["signal"])
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal== 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal == -1 ], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='Rate of change')
+	roc.plot(ax=ax2, lw=2., legend=True,grid=True)
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def sign_cho(close,volume,high,low,n,ws,wl):
+	"""
+	"""
+	signal=pd.DataFrame(index=close.index)
+	signal["compa"]=np.nan 
+	ch=cho(close,volume,high,low,n,ws,wl)["CHO"]
+	signal["compa"][ws+wl:]=np.where(ch[ws+wl:] > 0, 1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(close,signal["signal"])
+	pmval=pd.Series(pmval,index=close.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	close.plot(ax=ax1, color='g', lw=.5,figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","MMS","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='Chaikin Oscillator')
+	ch.plot(ax=ax2,lw=2., legend=True, grid=True)
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(close.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(close.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def sign_macd1(df,ws,wl):
+	"""
+	"""
+	signal=pd.DataFrame(index=df.index)
+	MACD=macd(df,ws,wl)["MACD"]
+	signal["compa"]=np.nan
+	signal["compa"][wl:]=np.where(MACD[wl:]>0 ,1 ,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(df,signal["signal"])
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.title("MACD Strategy")
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='MACD')
+	MACD.plot(ax=ax2, color='black', lw=2., legend=True,grid=True)
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig
+
+def macd(df,ws,wl, wsig=9):
+	"""
+	Moving Average Convergence Divegence
+	  :Paramère:
+	    df: 
+	    ws: ordre de court terme
+	    wl: ordre de long terme
+	    wsig: ordre pour le signal line
+	  :return:
+	   pndas.DataFrame  contient les valeurs des MACD et le Signal line
+	"""
+	MMECOURT = pd.Series(df.ewm(span=ws, min_periods=ws,adjust=False).mean())
+	MMELONG = pd.Series(df.ewm(span=wl, min_periods=wl,adjust=False).mean())
+	MACD = pd.Series(MMECOURT - MMELONG, name='MACD' )
+	MACDsign = pd.Series(MACD.ewm(wsig, min_periods=wsig).mean(), name='MACDsignal')
+	MACD=pd.DataFrame(MACD)
+	MACD = MACD.join(MACDsign)
+	return MACD

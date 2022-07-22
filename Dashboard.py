@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd 
 import requests
@@ -7,9 +6,8 @@ from bs4 import BeautifulSoup
 import plotly.express as px
 from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
-from _relative_strength_index import RelativeStrengthIndex
-from _bollinger_bands import BollingerBands
-from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, sign_momentum
+from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, bollinger, rsi, sign_momentum, sign_pvi, sign_bollinger, sign_rsi, sign_cho, sign_stochastique1, sign_roc
+# st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
 def ticker_2_CodeValeur(ticker):
@@ -79,40 +77,36 @@ if indicateur == 'MACD':
   with c2:
       wl = st.number_input('Wl', 26)
 
-  macd = MovingAverageConvergenceDivergence(df)
-  calcul_macd = macd._calculateTi(wl=wl,ws=ws)
-  df['macd'] = calcul_macd.macd
-  df['signal line'] = calcul_macd.signal_line
-  data = [df['close'], df['macd'], df['signal line']]
+  macd = macd(df.Close, ws, wl)
+  data = [df.Close, macd['MACD'], macd['MACDsignal']]
   headers = ["close", "macd", 'signal line']
+  sign_fig = sign_macd1(df.Close, ws, wl)
   
 elif indicateur == 'RSI':
-    rsi=RelativeStrengthIndex(df)
     period = st.number_input('Period', 9)
-    calcul_rsi = rsi._calculateTi(period=period)
-    df['rsi'] = calcul_rsi.rsi
-    data = [df['close'], df['rsi']]
+    rsi=rsi(df.iloc[:,3], period)
+    data = [rsi["COURS_CLOTURE"],rsi["RSI"]]
     headers = ["close", "rsi"]
+    sign_fig = sign_rsi(df.iloc[:,3], period)
+
 
 elif indicateur == 'BB':
-    BB=BollingerBands(df)
     c1, c2 = st.columns(2)
     with c1:
-        period = st.number_input('Period', 12)
+        w = st.number_input('W', 12)
     with c2:
-        std_nbr = st.number_input('Std Number', 4)
-    calcul_bb = BB._calculateTi(period=period,std_number=std_nbr)
-    df['middle_band'] = calcul_bb.middle_band	
-    df['upper_band'] = calcul_bb.upper_band
-    df['lower_band'] = calcul_bb.lower_band
-    data = [df['middle_band'], df['upper_band'], df['lower_band']]
-    headers = ["close", "middle_band", "upper_band", "lower_band"]
+        k= st.number_input('K', 4)
+    df1 = bollinger(df.iloc[:,3], w, k)
+    data = [df1['COURS_CLOTURE'],df1["BBDOWN"],df1["BBMID"],df1["BBUP"]]
+    headers = ["close",  "lower_band","middle_band","upper_band",]
+    sign_fig = sign_bollinger(df.iloc[:,3], w, k)
 
 elif indicateur == 'ROC':
     w = st.number_input('W', 9)
     roc = rate_of_change(df.Close, w)
     data = [roc['Close'], roc['ROC']]
     headers = ['Close', 'ROC']
+    sign_fig = sign_roc(df.Close, w)
 
 elif indicateur == 'OBV':
     obv = obv(df.Close, df.Volume)
@@ -126,10 +120,12 @@ elif indicateur == 'NVI':
     headers = ['Close', 'NVI'] 
 
 elif indicateur == 'PVI':
+    n = st.number_input('n', 9)
     pvi = pd.DataFrame(pvi(df.Close, df.Volume), columns = ['PVI'])
     pvi.index = df.index
     data = [df['Close'], pvi['PVI']]
-    headers = ['Close', 'PVI'] 
+    headers = ['Close', 'PVI']
+    sign_fig = sign_pvi(df.Close, df.Volume,n) 
   
 elif indicateur == 'SMA':
     period = st.number_input('n', 9)
@@ -166,6 +162,7 @@ elif indicateur == 'CHO':
     cho = cho(df.Close, df.Volume, df.High, df.Low, period, ws,wl)
     data = [cho['Close'], cho['CHO']]
     headers = ["close", 'CHO']
+    sign_fig = sign_cho(df.Close, df.Volume, df.High, df.Low, period, ws,wl)
 
 elif indicateur == 'MOM':
     c1, c2 = st.columns(2)
@@ -188,6 +185,7 @@ elif indicateur == 'STOCHA':
     stoch = stochastic(df.Close, df.High, df.Low,period, w)
     data = [stoch['Close'],stoch['%K'], stoch['%D']]
     headers = ["close", "K", 'D']
+    sign_fig = sign_stochastique1(df.Close, df.High, df.Low,period, w)
 
 st.markdown('__________________________________________________________')
 df3 = pd.concat(data, axis=1, keys=headers)
