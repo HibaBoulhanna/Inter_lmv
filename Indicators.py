@@ -370,7 +370,7 @@ def sign_momentum(df,w,wsig=9):
 	signal["signal"]=adjustsignal(signal["compa"].diff())
 	pmval=pmv(df,signal["signal"])
 	pmval=pd.Series(pmval,index=df.index)
-	
+	fig = plt.figure()
 	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
 	df.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
 	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
