@@ -17,7 +17,8 @@ def get_acp_opt(df):
     ##################################
     macd=df.ta.macd()
     macd=pd.DataFrame(macd)
-    macd=macd["MACD_12_26_9"]
+    macd["MACD"]=macd["MACD_12_26_9"]
+    macd=macd["MACD"]
     ##################################
     RSI=df.ta.rsi()
     rsi=pd.DataFrame(RSI)
