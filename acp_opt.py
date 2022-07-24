@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi
 
 
-def get_acp(df):
+def get_acp_opt(df):
     bbands=df.ta.bbands()
     BB=pd.DataFrame(bbands)
     BL=BB["BBB_5_2.0"]
