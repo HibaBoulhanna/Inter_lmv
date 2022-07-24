@@ -5,6 +5,7 @@ import investpy as py
 from bs4 import BeautifulSoup
 import plotly.express as px
 from acp import get_acp
+from acp_opt import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
 from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, bollinger, rsi, sign_momentum, sign_pvi, sign_bollinger, sign_rsi, sign_cho, sign_stochastique1, sign_roc, sign_nvi, sign_mfi, sign_mms1
 # st.set_option('deprecation.showPyplotGlobalUse', False)
