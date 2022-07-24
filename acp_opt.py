@@ -87,5 +87,5 @@ def get_acp_opt(df):
     Tableau_pour_IS=carre[["var_fois_pc_1","var_fois_pc_2","var_fois_pc_3","var_fois_pc_4","var_fois_pc_5","var_fois_pc_6",  "var_fois_pc_7"]]
     IS = Tableau_pour_IS.sum(axis = 1)
     IS = pd.DataFrame(IS, columns=['Poid'])
-    
+    IS["Poid"]=IS["Poid"]*100
     return IS
