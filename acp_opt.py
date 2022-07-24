@@ -22,15 +22,15 @@ def get_acp(df):
     rsi=pd.DataFrame(RSI)
     ################################## 
     try:
-        roc1 = rate_of_change(df.close, 9)['ROC']
-        sma = smm(df.close,9).SMM
-        mom = momentum(df.close,9)['MOMsignal']
+        roc1 = rate_of_change(df.close, 12)['ROC']
+        sma = smm(df.close,26).SMM
+        mom = momentum(df.close,20)['MOMsignal']
         stoch1 =  stochastic(df.close, df.high, df.low,9, 26)['%K']
         stoch2 =  stochastic(df.close, df.high, df.low,9, 26)['%D']
     except :
-        roc1 = rate_of_change(df.Close, 9)['ROC']
-        sma = smm(df.Close,9).SMM
-        mom = momentum(df.Close,9)['MOMsignal']
+        roc1 = rate_of_change(df.Close, 12)['ROC']
+        sma = smm(df.Close,26).SMM
+        mom = momentum(df.Close,20)['MOMsignal']
         stoch1 =  stochastic(df.Close, df.High, df.Low,9, 26)['%K']
         stoch2 =  stochastic(df.Close, df.High, df.Low,9, 26)['%D'] 
         ###################################
