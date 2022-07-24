@@ -12,7 +12,8 @@ from Indicators import smm, stochastic, rate_of_change, momentum, emm, obv, will
 def get_acp_opt(df):
     bbands=df.ta.bbands()
     BB=pd.DataFrame(bbands)
-    BL=BB["BBB_5_2.0"]
+    BB["BBB"]=BB["BBB_5_2.0"]
+    BL=BB["BBB"]
     ##################################
     macd=df.ta.macd()
     macd=pd.DataFrame(macd)
