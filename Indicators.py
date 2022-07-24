@@ -59,9 +59,9 @@ def smm(df,n):
 	               |                                  | 2nd column(SMM): values of Moving average
 
 	"""
-	MMS = pd.Series(df.rolling(n, min_periods=n).mean(), name='SMM')
+	SMM = pd.Series(df.rolling(n, min_periods=n).mean(), name='SMM')
 	df=pd.DataFrame(df)
-	df=df.join(MMS)
+	df=df.join(SMM)
 	return df
 
 def stochastic(df ,high,low, n , w):
@@ -337,7 +337,6 @@ def bollinger(df,w,k):
  	df.columns=['COURS_CLOTURE',"BBDOWN","BBMID","BBUP"]
  	return df
 
-
 def rsi(df,n):
  	"""
  	 Relative Strength index
@@ -361,6 +360,25 @@ def rsi(df,n):
  	df=df.join(RSI)
  	df.columns=["COURS_CLOTURE","RSI"] 
  	return df
+
+def macd(df,ws,wl, wsig=9):
+	"""
+	Moving Average Convergence Divegence
+	  :Paramère:
+	    df: 
+	    ws: ordre de court terme
+	    wl: ordre de long terme
+	    wsig: ordre pour le signal line
+	  :return:
+	   pndas.DataFrame  contient les valeurs des MACD et le Signal line
+	"""
+	MMECOURT = pd.Series(df.ewm(span=ws, min_periods=ws,adjust=False).mean())
+	MMELONG = pd.Series(df.ewm(span=wl, min_periods=wl,adjust=False).mean())
+	MACD = pd.Series(MMECOURT - MMELONG, name='MACD' )
+	MACDsign = pd.Series(MACD.ewm(wsig, min_periods=wsig).mean(), name='MACDsignal')
+	MACD=pd.DataFrame(MACD)
+	MACD = MACD.join(MACDsign)
+	return MACD
 
 def sign_momentum(df,w,wsig=9):
 	MOM=momentum(df,w,wsig=9)[["MOM","MOMsignal"]]
@@ -401,7 +419,7 @@ def sign_pvi(close,volume,n):
 	close.plot(ax=ax1, color='g', lw=.5,figsize=(13,9))
 	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal == 1.0],'^', markersize=7, color='g')
 	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1.0], 'v', markersize=7, color='r')
-	plt.legend(["COURS_CLOTURE","MMS","Achat","Vente"])
+	plt.legend(["COURS_CLOTURE","SMM","Achat","Vente"])
 	ax2 = fig.add_subplot(312, ylabel='Negative Volume Index')
 	pv.plot(ax=ax2,lw=2., legend=True, grid=True)
 	pvis.plot(ax=ax2,lw=2., legend=True, grid=True)
@@ -411,7 +429,7 @@ def sign_pvi(close,volume,n):
 	plt.legend(["Plus_value","Moins_value"])
 	return fig 
 
-def  sign_rsi(df,n):
+def sign_rsi(df,n):
 	"""
 	"""
 	signal=pd.DataFrame(index=df.index)
@@ -549,7 +567,7 @@ def sign_cho(close,volume,high,low,n,ws,wl):
 	close.plot(ax=ax1, color='g', lw=.5,figsize=(13,9))
 	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal == 1.0],'^', markersize=7, color='g')
 	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1.0], 'v', markersize=7, color='r')
-	plt.legend(["COURS_CLOTURE","MMS","Achat","Vente"])
+	plt.legend(["COURS_CLOTURE","SMM","Achat","Vente"])
 	ax2 = fig.add_subplot(312, ylabel='Chaikin Oscillator')
 	ch.plot(ax=ax2,lw=2., legend=True, grid=True)
 	ax3=fig.add_subplot(313, ylabel='PMV')
@@ -583,21 +601,86 @@ def sign_macd1(df,ws,wl):
 	plt.legend(["Plus_value","Moins_value"])
 	return fig
 
-def macd(df,ws,wl, wsig=9):
+def sign_nvi(close,volume,n):
 	"""
-	Moving Average Convergence Divegence
-	  :Paramère:
-	    df: 
-	    ws: ordre de court terme
-	    wl: ordre de long terme
-	    wsig: ordre pour le signal line
-	  :return:
-	   pndas.DataFrame  contient les valeurs des MACD et le Signal line
 	"""
-	MMECOURT = pd.Series(df.ewm(span=ws, min_periods=ws,adjust=False).mean())
-	MMELONG = pd.Series(df.ewm(span=wl, min_periods=wl,adjust=False).mean())
-	MACD = pd.Series(MMECOURT - MMELONG, name='MACD' )
-	MACDsign = pd.Series(MACD.ewm(wsig, min_periods=wsig).mean(), name='MACDsignal')
-	MACD=pd.DataFrame(MACD)
-	MACD = MACD.join(MACDsign)
-	return MACD
+	signal=pd.DataFrame(index=close.index)
+	signal["compa"]=np.nan 
+	nv=nvi(close,volume)
+	nvis=pd.Series(nv.rolling(n).mean(), name="NVIsignal")
+	signal["compa"][n:]=np.where(nv[n:] > nvis[n:] ,1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(close,signal["signal"])
+	pmval=pd.Series(pmval,index=close.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	close.plot(ax=ax1, color='g', lw=.5,figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","SMM","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='Negative Volume Index')
+	nv.plot(ax=ax2,lw=2., legend=True, grid=True)
+	nvis.plot(ax=ax2,lw=2., legend=True, grid=True)
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(close.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(close.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def sign_mfi(close,volume,high,low,n):
+	"""
+	"""
+	signal=pd.DataFrame(index=close.index)
+	mfi=MFI(close,volume,high,low,n)['MFI']
+	signal["compa_achat"]=np.nan
+	signal["compa_vente"]=np.nan
+	signal["compa_achat"][n:]=np.where(mfi[n:] > 80,1,0)
+	signal["signal_achat"]=signal["compa_achat"].diff()
+	signal["compa_vente"][n:]=np.where(mfi[n:] < 20,4,2)
+	signal["signal_vente"]=signal["compa_vente"].diff()
+	sig=np.where(signal["signal_achat"]==1,1,0)+np.where(signal["signal_vente"]==2,-1,0)
+	sig=adjustsignal(sig)
+	sig=pd.Series(sig, index=close.index)
+	signal["signal"]=sig
+	pmval=pmv(close,sig)
+	pmval=pd.Series(pmval,index=close.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(311, ylabel='COURS_CLOTURE')
+	close.plot(ax=ax1, color='k', lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,close[signal.signal== 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,close[signal.signal == -1], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","Achat","Vente"])
+	ax2 = fig.add_subplot(312, ylabel='MFI')
+	mfi.plot(ax=ax2, lw=2., legend=True,grid=True)
+	plt.axhline(80,color="green")
+	plt.axhline(20,color="red")
+	ax3=fig.add_subplot(313, ylabel='PMV')
+	ax3.fill_between(close.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax3.fill_between(close.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig 
+
+def sign_mms1(df,n):
+	"""
+		R1
+	"""
+	signal=pd.DataFrame(index=df.index)
+	signal['signal']=0
+	signal["compa"]=0
+	SMM=smm(df,n)["SMM"]
+	signal["compa"].loc[n:]=np.where(df[n:] > SMM[n:],1,0)
+	signal["signal"]=adjustsignal(signal["compa"].diff())
+	pmval=pmv(df,signal["signal"])
+	pmval=pd.Series(pmval,index=df.index)
+	fig = plt.figure()
+	ax1 = fig.add_subplot(211, ylabel='COURS_CLOTURE')
+	df.plot(ax=ax1, color='g', lw=.5)
+	SMM.plot(ax=ax1, lw=.5, figsize=(13,9))
+	ax1.plot(signal.loc[signal.signal== 1.0].index ,df[signal.signal == 1.0],'^', markersize=7, color='g')
+	ax1.plot(signal.loc[signal.signal== -1].index,df[signal.signal == -1.0], 'v', markersize=7, color='r')
+	plt.legend(["COURS_CLOTURE","SMM","Achat","Vente"])  
+	ax2 = fig.add_subplot(212, ylabel='PMV')
+	ax2.fill_between(df.index,pmval,where=(pmval > 0), facecolor='green', alpha=0.5)
+	ax2.fill_between(df.index,pmval,where=(pmval < 0), facecolor='red',alpha=0.5)
+	plt.legend(["Plus_value","Moins_value"])
+	return fig

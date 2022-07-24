@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import plotly.express as px
 from acp import get_acp
 from _moving_average_convergence_divergence import MovingAverageConvergenceDivergence
-from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, bollinger, rsi, sign_momentum, sign_pvi, sign_bollinger, sign_rsi, sign_cho, sign_stochastique1, sign_roc
+from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, bollinger, rsi, sign_momentum, sign_pvi, sign_bollinger, sign_rsi, sign_cho, sign_stochastique1, sign_roc, sign_nvi, sign_mfi, sign_mms1
 # st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
@@ -114,10 +114,12 @@ elif indicateur == 'OBV':
     headers = ['Close', 'OBV'] 
 
 elif indicateur == 'NVI':
+    n = st.number_input('n', 9)
     nvi = pd.DataFrame(nvi(df.Close, df.Volume), columns = ['NVI'])
     nvi.index = df.index
     data = [df['Close'], nvi['NVI']]
     headers = ['Close', 'NVI'] 
+    sign_fig = sign_nvi(df.Close, df.Volume,n) 
 
 elif indicateur == 'PVI':
     n = st.number_input('n', 9)
@@ -132,6 +134,7 @@ elif indicateur == 'SMA':
     sma = smm(df.Close,period)
     data = [sma['Close'], sma['SMM']]
     headers = ['Close', 'SMA']
+    sign_fig = sign_mms1(df.Close,period)
 
 elif indicateur == 'williams':
     period = st.number_input('n', 9)
@@ -150,6 +153,7 @@ elif indicateur == 'MFI':
     mfi = MFI(df.Close, df.Volume, df.High, df.Low, period)
     data = [mfi.Close, mfi.MFI]
     headers = ['Close', 'MFI']
+    sign_fig = sign_mfi(df.Close, df.Volume, df.High, df.Low, period)
 
 elif indicateur == 'CHO':
     c1, c2, c3 = st.columns(3)
@@ -194,6 +198,12 @@ st.plotly_chart(fig, use_container_width=False, sharing="streamlit")
 st.pyplot(sign_fig)
 
 dt = get_acp(df)
-st.markdown('ACP :')
+st.markdown('ACP_Standard :')
 st.dataframe(dt)
 st.markdown('__________________________________________________________')
+dtt=get_acp(df)
+st.markdown('ACP_Optimisée :')
+dtt=get_acp(df)
+st.dataframe(dtt)
+dtt=get_acp(df)
+
