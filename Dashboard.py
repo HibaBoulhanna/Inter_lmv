@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd 
 import requests
-import investpy as py
+import yfinance as yf
 from bs4 import BeautifulSoup
 import plotly.express as px
 from acp import get_acp
@@ -10,15 +10,6 @@ from _moving_average_convergence_divergence import MovingAverageConvergenceDiver
 from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momentum, emm, obv, williams, MFI, cho, nvi, pvi, bollinger, rsi, sign_momentum, sign_pvi, sign_bollinger, sign_rsi, sign_cho, sign_stochastique1, sign_roc, sign_nvi, sign_mfi, sign_mms1
 # st.set_option('deprecation.showPyplotGlobalUse', False)
 
-
-def ticker_2_CodeValeur(ticker):
-  ticker_2_CodeValeur = {"ADH" : "9000" , "AFM" : "12200" , "AFI" : "11700" , "GAZ" : "7100" , "AGM" : "6700" , "ADI" : "11200" , "ALM" : "6600" , "ARD" : "27" , "ATL" : "10300" , "ATW" : "8200" , "ATH" : "3200" , "NEJ" : "7000" , "BAL" : "3300" , "BOA" : "1100" , "BCP" : "8000" , "BCI" : "5100" , "CRS" : "8900" , "CDM" : "3600" , "CDA" : "3900" , "CIH" : "3100" , "CMA" : "4000" , "CMT" : "11000" , "COL" : "9200" , "CSR" : "4100" , "CTM" : "2200" , "DRI" : "8500" , "DLM" : "10800" , "DHO" : "10900" , "DIS" : "4200" , "DWY" : "9700" , "NKL" : "11300" , "EQD" : "2300" , "FBR" : "9300" , "HPS" : "9600" , "IBC" : "7600" , "IMO" : "12" , "INV" : "9500" , "JET" : "11600" , "LBV" : "11100" , "LHM" : "3800" , "LES" : "4800" , "LYD" : "8600" , "M2M" : "10000" , "MOX" : "7200" , "MAB" : "1600" , "MNG" : "7300" , "MLE" : "2500" , "IAM" : "8001" , "MDP" : "6500" , "MIC" : "10600" , "MUT" : "21" , "NEX" : "7400" , "OUL" : "5200" , "PRO" : "9900" , "REB" : "5300" , "RDS" : "12000" , "RISMA" : "8700" , "S2M" : "11800" , "SAH" : "11400" , "SLF" : "10700" , "SAM" : "6800" , "SMI" : "1500" , "SNA" : "10500" , "SNP" : "9400" , "MSA" : "12300" , "SID" : "1300" , "SOT" : "9800" , "SRM" : "2000" , "SBM" : "10400" , "STR" : "11500" , "TQM" : "11900" , "TIM" : "10100" , "TMA" : "12100" , "UMR" : "7500" , "WAA" : "6400" , "ZDJ" : "5800"}
-  return ticker_2_CodeValeur[ticker]
-
-
-def get_image(ticker):                                                           
-  url = f"https://www.casablanca-bourse.com/bourseweb/img/societes_cote/{ticker}.gif"
-  return url
 
 apptitle = 'Projet hiba'
 
@@ -41,34 +32,16 @@ st.markdown('__________________________________________________________')
 
 
 
-dropdown = st.sidebar.selectbox("Choisir une action", pd.concat([pd.Series(["MASI"]), py.get_stocks(country='morocco').name]))
+dropdown = st.sidebar.selectbox("Choisir une action", ['GOOG', 'AAPL'])
 indicateur = st.sidebar.selectbox("Choisir un indicateur", ['BB','MACD','MOM','RSI','ROC','SMA','STOCHA','OBV', 'williams', 'EMM', 'MFI', 'CHO', 'NVI', 'PVI'])
 
 start = st.sidebar.date_input('Debut', value =pd.to_datetime('01-01-2020'))
 end = st.sidebar.date_input('Fin', value = pd.to_datetime('today'))
+# 2017-04-30
+start = start.strftime('%Y-%m-%d')
+end = end.strftime('%Y-%m-%d')
 
-start = start.strftime('%d/%m/%Y')
-end = end.strftime('%d/%m/%Y')
-
-stocks = py.get_stocks(country='morocco')
-stocks.set_index("name", inplace = True)
-
-
-if dropdown != "MASI":
-  ticker =  stocks.loc[dropdown,'symbol']
-  df=py.get_stock_historical_data(stock=ticker, country='morocco', from_date=start, to_date=end)
-  url = get_image(ticker)
-  url = str(url)
-else :
-  df=py.get_index_historical_data(index='Moroccan All Shares', country='morocco', from_date=start, to_date=end)
-  df.Volume = df.Close*10000 
-  url = "https://static.lematin.ma/cdn/images/icobourse/indices/masi.png"
-
-
-# st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True) # logo de l'action
-st.markdown('![Alt Text]('+url+')') # logo de l'action
-
-print(url)
+df = yf.download(dropdown, start=start, end=end)
 st.markdown('__________________________________________________________')
 
 if indicateur == 'MACD':
