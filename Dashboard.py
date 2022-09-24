@@ -16,18 +16,18 @@ apptitle = 'Projet hiba'
 st.set_page_config(page_title=apptitle, page_icon=":chart_with_upwards_trend:")
 
 # Title the app
-st.title('Interface Stage PFE ')
+st.title('Interface pour industrialisation de la solution')
 
 # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
 
 # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
 
 
-st.sidebar.markdown('<center><img src="https://www.lamarocainevie.com/bo/sites/default/files/2019-02/logo.png" width="300"  height="100" alt="Marocaine vie "></center>', unsafe_allow_html=True)
+
 
 st.sidebar.markdown("## Sélectionner un indicateur et préciser une valeurs pour ses paramètres  ")
 st.markdown('Travail realisé par: Boulhanna Hiba ')
-st.markdown("Sous la direction de Mr.HOUMMANI Ayoub & Mr.BENABADJI Oualid")
+st.markdown("I")
 st.markdown('__________________________________________________________')
 
 
