@@ -12,6 +12,10 @@ from Indicators import  macd, sign_macd1, smm, stochastic, rate_of_change, momen
 
 
 def get_logo(ticker):
+    cookies = {
+        '_sp_ses.cf1a': '*',
+        '_sp_id.cf1a': 'fae78f9c-2ee8-4598-b504-df36037e640b.1646861479.3.1649003427.1647712930.a10c82a7-fc67-4f35-92a5-9b56646b5049',
+    }
     headers = {
             'authority': 'www.tradingview.com',
             'cache-control': 'max-age=0',
@@ -30,7 +34,7 @@ def get_logo(ticker):
 
     try : 
         url = f'https://www.tradingview.com/symbols/NYSE-{ticker}/'
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, cookies=cookies)
         soup = BeautifulSoup(r.text, "html.parser")
         img = soup.find("div", {"class": "js-sticky-symbol-header-container tv-sticky-symbol-header"})
         img_url = img["data-logo-urls"]
