@@ -87,7 +87,7 @@ url = get_logo(dropdown)
 url = str(url)
 
 st.markdown('__________________________________________________________')
-st.markdown('<center>  '+dropdown+'                <img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True)
+st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True)
 st.markdown('__________________________________________________________')
 
 st.markdown('__________________________________________________________')
