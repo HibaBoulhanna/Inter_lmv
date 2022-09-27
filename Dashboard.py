@@ -62,13 +62,10 @@ st.title('Interface pour industrialisation de la solution')
 # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
 
 
-
-
 st.sidebar.markdown("## Sélectionner un indicateur et préciser une valeurs pour ses paramètres  ")
 st.markdown('Travail realisé par: Boulhanna Hiba ')
 st.markdown("I")
 st.markdown('__________________________________________________________')
-
 
 
 dropdown = st.sidebar.selectbox("Choisir une action", ['GOOG', 'AAPL'])
@@ -81,15 +78,9 @@ start = start.strftime('%Y-%m-%d')
 end = end.strftime('%Y-%m-%d')
 
 df = yf.download(dropdown, start=start, end=end)
-
-
 url = get_logo(dropdown)
 url = str(url)
-
-st.markdown('__________________________________________________________')
 st.markdown('<center><img src="'+url+'" alt="stock logo"></center>', unsafe_allow_html=True)
-st.markdown('__________________________________________________________')
-
 st.markdown('__________________________________________________________')
 
 if indicateur == 'MACD':
